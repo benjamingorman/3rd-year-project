@@ -1,0 +1,7 @@
+This file contains a list of useful links I am looking at
+
+CS Projects homepage
+https://www.cs.york.ac.uk/projects/index.php
+
+Project description
+https://www.cs.york.ac.uk/projects/allocation/project/sok.2017.09/
