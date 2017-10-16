@@ -1,0 +1,2 @@
+cs_bham_ac_uk_self_organizing_maps_slides.pdf
+http://www.cs.bham.ac.uk/~jxb/NN/l16.pdf
