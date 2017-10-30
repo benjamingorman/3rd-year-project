@@ -5,23 +5,28 @@ import random
 import svgwrite
 from PIL import Image
 
-LATTICE_WIDTH = 30
-LATTICE_HEIGHT = 30
-INITIAL_LEARNING_RATE = 0.05
+LATTICE_WIDTH = 20
+LATTICE_HEIGHT = 20
+INITIAL_LEARNING_RATE = 0.1
 INPUT_DIMENSIONS = 3
 WEIGHTS = np.random.rand(LATTICE_HEIGHT, LATTICE_WIDTH, INPUT_DIMENSIONS)
-WEIGHTS *= 255 # to better approximate RGB colour values
-DELTA0 = 0.2
-NEIGHBOURHOOD_SHRINK_FACTOR = 1000.0
-LEARNING_RATE_SHRINK_FACTOR = 100.0
+WEIGHTS = WEIGHTS * 50 + 100 # to better approximate RGB colour values
+#WEIGHTS = WEIGHTS * 0
+DELTA0 = 10.0
+NEIGHBOURHOOD_SHRINK_FACTOR = 600.0
+LEARNING_RATE_SHRINK_FACTOR = 300.0
 EPOCH_SIZE = 1
+NUM_EPOCHS = 1000
 
+def negexp(x):
+    return math.exp(-x)
 
 def discriminant_function(w1, w2):
     return np.linalg.norm(w2 - w1)
 
 def neighbourhood_size(time):
-    return DELTA0 * math.exp(time / NEIGHBOURHOOD_SHRINK_FACTOR)
+    #return DELTA0 * (1 - math.exp(-time / NEIGHBOURHOOD_SHRINK_FACTOR))
+    return DELTA0 * negexp(time / NEIGHBOURHOOD_SHRINK_FACTOR)
 
 def learning_rate(time):
     return INITIAL_LEARNING_RATE * math.exp(-time / LEARNING_RATE_SHRINK_FACTOR)
@@ -30,7 +35,8 @@ def neighbourhood_function(neuron1, neuron2, time):
     (x1, y1) = neuron1
     (x2, y2) = neuron2
     dist = ((x2 - x1)**2 + (y2 - y1) ** 2)
-    T = math.exp(-dist / 2 * neighbourhood_size(time)**2)
+    #T = negexp(dist / 2 * neighbourhood_size(time)**2)
+    T = negexp(dist / neighbourhood_size(time))
     return T
 
 def find_winning_neuron(pattern):
@@ -99,20 +105,20 @@ if __name__ == "__main__":
         print(im.size)
 
         # List of all the pixel colour values
-        im_data = list(im.getdata())[:1000]
+        im_data = list(im.getdata())
         random.shuffle(im_data)
         print("Number of pixels: ", len(im_data))
 
         # TRAINING STAGE
         # Iterate through all inputs in batches
         print("TRAINING")
-        for i in range(len(im_data)):
-            time = int(i / EPOCH_SIZE)
-            if i % EPOCH_SIZE == 0:
-                print("Epoch: " + str(time))
-            pixel = np.array(im_data[i])
-            winning_neuron = find_winning_neuron(pixel)
-            adapt_weights(winning_neuron, pixel, time)
+        for time in range(NUM_EPOCHS):
+            print("Epoch: " + str(time))
+            for j in range(EPOCH_SIZE):
+                pixel_index = (time * EPOCH_SIZE + j) % len(im_data)
+                pixel = np.array(im_data[pixel_index])
+                winning_neuron = find_winning_neuron(pixel)
+                adapt_weights(winning_neuron, pixel, time)
 
 
         # OUTPUT
