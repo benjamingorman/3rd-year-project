@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>title</title>
+  <link rel="stylesheet" href="style.css" type="text/css">
+  </head>
+  <body>
+    <h1>SOM Visualizer</h1>
+    <div class="container">
+        <h3>Load from file</h3>
+        <textarea id="som_description_text"></textarea>
+        <br>
+        <input type="file" id="som_file_select"/>
+    </div>
+    <div class="container">
+        <h3>Test input pattern</h3>
+        <input id="input_pattern_text" type="text" value="1.1,2.2,3.3">
+        <button id="input_pattern_test">Test</button>
+    </div>
+    <br/>
+    <div class="row">
+        <div class="container" id="neuron_info_box">
+            <h3>Neuron info</h3>
+            <h4>Index: <span id="neuron_info_index"></span><h4>
+            <h4>Position: <span id="neuron_info_pos"></span><h4>
+            <h4>Weight vector:</h4>
+            <p id="neuron_info_weights"></p>
+        </div>
+        <div id="viz_box">
+            <div class="buttons">
+                <button class="zoom-in">Zoom In</button>
+                <button class="zoom-out">Zoom Out</button>
+                <input type="range" class="zoom-range">
+                <button class="reset">Reset</button>
+            </div>
+            <div id="viz_box_inner">
+                <img src="https://smileyfaceplace.weebly.com/uploads/6/9/7/1/6971266/4692542_orig.jpg"/>
+            </div>
+        </div>
+    </div>
+
+  
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script src="./lib/jquery.panzoom.js" type="text/javascript"></script>
+    <script src="./main.js" type="text/javascript"></script>
+    <script src="./default_som.js" type="text/javascript"></script>
+  </body>
+</html>
+

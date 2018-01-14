@@ -1,0 +1,30 @@
+A. Measurement of distance between input and neuron
+- Euclidian (squared euclidian is common to avoid sqrt)
+- Correlation
+- Direction cosine
+- Block distance
+
+B. Neighbourhood functions
+- Exponential decay
+- h_g(w_ij, w_mn, r) = e^((-1/2)(sqrt((i-n)^2 + (j-m)^2) / r)^2)
+- Cone
+- Cylinder
+
+C. Initialization of weights
+- Random
+- Use of random selection of input samples
+- Attempt to reflect distribution of data (principal components)
+
+D. Training
+- Sequential (one input by one before weights are adjusted)
+- Batch
+
+Learning rate a(t) and neighbourhood radius r(t) decrease over time
+
+
+Sometimes 2 phases are used in training process
+1. Self Organizing (ordering) phase:
+Topological ordering takes place for roughly 1000 iterations. Learning rate and neighbourhood radius are decreasing
+2. Convergence (fine tuning) phase:
+Fine tunes the map. Roughly 500 * number of neurons iterations. Small learning rate and neighbourhood radius which may be fixed.
+
