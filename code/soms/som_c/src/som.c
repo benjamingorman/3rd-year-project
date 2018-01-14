@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include <regex.h>
 #include <math.h>
@@ -60,7 +61,7 @@ float * get_neuron_weight_vector(struct SOM som, int index) {
 int save_SOM(struct SOM som, char* filepath) {
     FILE *f = fopen(filepath, "w");
     if (f == NULL) {
-        printf("Error opening file: %s", filepath);
+        printf("Error opening file: %s\n", filepath);
         return STATUS_ERROR;
     }
 
@@ -83,7 +84,7 @@ int save_SOM(struct SOM som, char* filepath) {
 int load_SOM(struct SOM * som, char* filepath) {
     FILE *f = fopen(filepath, "r");
     if (f == NULL) {
-        printf("Error opening file: %s", filepath);
+        printf("Error opening file: %s\n", filepath);
         return STATUS_ERROR;
     }
 
@@ -282,7 +283,7 @@ void train_SOM(struct SOM som, struct SOMTrainingParams params,
         char * train_set_filepath) {
     FILE *input_file = fopen(train_set_filepath, "r");
     if (input_file == NULL) {
-        printf("Error opening file: %s", train_set_filepath);
+        printf("Error opening file: %s\n", train_set_filepath);
         return;
     }
 
@@ -346,6 +347,80 @@ void print_neuron_weights(struct SOM som, int neuron) {
 }
 
 int main(int argc, char** argv) {
+    int opt_rows = 10;
+    int opt_cols = 10;
+    int opt_input_dims = 3;
+    char opt_train_file[128] = "default_train_file.txt";
+    char opt_save_file[128] = "default_save_file.som";
+    struct SOMTrainingParams params = create_SOMTrainingParams();
+
+    for (int i=0; i < argc; ++i) {
+        char * opt = argv[i];
+        char * arg;
+
+        if (opt[0] == '-' && opt[1] == '-') {
+            // It's an option so it must be followed by an argument
+            assert(argc > i);
+        }
+
+        if (i + 1 < argc) {
+            arg = argv[i+1];
+        }
+
+        if (strcmp(opt, "--rows") == 0) {
+            opt_rows = atoi(arg);
+            printf("Set rows %d\n", opt_rows);
+        }
+        else if (strcmp(opt, "--cols") == 0) {
+            opt_cols = atoi(arg);
+            printf("Set cols %d\n", opt_cols);
+        }
+        else if (strcmp(opt, "--input-dims") == 0) {
+            opt_input_dims = atoi(arg);
+            printf("Set input_dims %d\n", opt_input_dims);
+        }
+        else if (strcmp(opt, "--train") == 0) {
+            strcpy(opt_train_file, arg);
+            printf("Set train file %s\n", opt_train_file);
+        }
+        else if (strcmp(opt, "--save") == 0) {
+            strcpy(opt_save_file, arg);
+            printf("Set save file %s\n", opt_save_file);
+        }
+        else if (strcmp(opt, "--iterations") == 0) {
+            params.iterations = atoi(arg);
+            printf("Set iterations %d\n", params.iterations);
+        }
+        else if (strcmp(opt, "--learn-rate-initial") == 0) {
+            params.learn_rate_initial = atof(arg);
+            printf("Set learn_rate_initial %f\n", params.learn_rate_initial);
+        }
+        else if (strcmp(opt, "--learn-rate-final") == 0) {
+            params.learn_rate_final = atof(arg);
+            printf("Set learn_rate_final %f\n", params.learn_rate_final);
+        }
+        else if (strcmp(opt, "--n-radius-initial") == 0) {
+            params.n_radius_initial = atof(arg);
+            printf("Set n_radius_initial %f\n", params.n_radius_initial);
+        }
+        else if (strcmp(opt, "--n-radius-final") == 0) {
+            params.n_radius_final = atof(arg);
+            printf("Set n_radius_final %f\n", params.n_radius_final);
+        }
+
+    int iterations;
+    float learn_rate_initial;
+    float learn_rate_final;
+    float n_radius_initial;
+    float n_radius_final;
+    }
+
+    struct SOM som = create_SOM(opt_rows, opt_cols, opt_input_dims);
+    normalize_weight_vectors(som, 0);
+    train_SOM(som, params, opt_train_file);
+    save_SOM(som, opt_save_file);
+
+
     /*
     randomize_weight_vectors(som, -2, 2);
     train_SOM(som, "sample_input_file.txt");
@@ -358,11 +433,11 @@ int main(int argc, char** argv) {
     normalize_weight_vectors(som, 0);
     train_SOM(som, params, "sample_input_file.txt");
     save_SOM(som, "foo.som");
-    */
 
     struct SOM som = create_SOM(100, 100, 4);
     randomize_weight_vectors(som, -2, 2);
     save_SOM(som, "big_random.som");
+    */
 
     return 0;
 }
