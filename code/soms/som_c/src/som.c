@@ -79,7 +79,7 @@ int save_SOM(struct SOM som, char* filepath) {
             fprintf(f, ",");
     }
 
-    printf("Saved SOM to %s\n", filepath);
+    printf("Saved SOM to \"%s\"\n", filepath);
     fclose(f);
     return STATUS_OK;
 }
@@ -129,6 +129,7 @@ int load_SOM(struct SOM * som, char* filepath) {
         return STATUS_ERROR;
     }
 
+    fclose(f);
     return STATUS_OK;
 }
 
@@ -269,11 +270,12 @@ void adjust_weights(struct SOM som, float * input_vec, int bmu, float learn_rate
 void train_SOM(
         struct SOM som,
         struct SOMTrainingParams params,
+        int phase,
         char * train_filepath,
         int train_file_class_index
         )
 {
-    printf("===== TRAINING =====\n");
+    printf("===== TRAINING Phase %d =====\n", phase);
     FILE *fp = fopen(train_filepath, "r");
     if (fp == NULL) {
         printf("Error opening file: %s\n", train_filepath);
@@ -304,19 +306,21 @@ void train_SOM(
 
         parse_input_line(input_line_buf, train_file_class_index, input_vector, som.input_dims);
 
-        if (iteration % 100 == 0)
-            printf("Progress: %0.1f%%, Iteration %d\r", progress*100, iteration);
 
         float learn_rate = linear_blend(params.learn_rate_initial,
                                   params.learn_rate_final, progress);
         float n_radius = linear_blend(params.n_radius_initial,
                                 params.n_radius_final, progress);
 
+        if (iteration % 100 == 0)
+            printf("Progress: %0.1f%%, Iteration %d, learn_rate %f, n_radius %f\r", progress*100, iteration, learn_rate, n_radius);
+
         int bmu = find_bmu(som, input_vector);
         adjust_weights(som, input_vector, bmu, learn_rate, n_radius);
     }
 
     free(input_line_buf);
+    fclose(fp);
     printf("\n\n");
 }
 
@@ -331,10 +335,62 @@ void randomize_weight_vectors(struct SOM som, float min, float max) {
     }
 }
 
-void normalize_weight_vectors(struct SOM som, float value) {
+void equalize_weight_vectors(struct SOM som, float value) {
     for (int i=0; i < get_num_weight_elements(som); ++i) {
         som.data[i] = value;
     }
+}
+
+// Distribute each weight linearly across the range of inputs for each dimension
+void intelligently_randomize_weight_vectors(
+        struct SOM som,
+        char * input_file,
+        int input_file_class_index)
+{
+    FILE *fp = fopen(input_file, "r");
+    if (fp == NULL) {
+        printf("Error opening file: %s\n", input_file);
+        return;
+    }
+
+    float min_values[som.input_dims];
+    float max_values[som.input_dims];
+
+    for (int i=0; i < som.input_dims; ++i) {
+        min_values[i] = FLT_MAX;
+        max_values[i] = FLT_MIN;
+    }
+
+    float input_vector[som.input_dims];
+    char * input_line_buf = (char *)malloc(LINE_BUF_SIZE);
+
+    int status;
+    while ((status = read_input_file_line(fp, input_line_buf)) == STATUS_OK) {
+        parse_input_line(input_line_buf, input_file_class_index, input_vector, som.input_dims);
+
+        for (int i=0; i < som.input_dims; ++i) {
+            float x = input_vector[i];
+            if (x < min_values[i]) {
+                min_values[i] = x;
+            }
+            if (x > max_values[i]) {
+                max_values[i] = x;
+            }
+        }
+
+    }
+
+    int num_neurons = som.rows * som.cols;
+    for (int n=0; n < num_neurons; ++n) {
+        float * weight_vector = get_neuron_weight_vector(som, n);
+        
+        for (int i=0; i < som.input_dims; ++i) {
+            weight_vector[i] = rand_float_range(min_values[i], max_values[i]);
+        }
+    }
+
+    free(input_line_buf);
+    fclose(fp);
 }
 
 void print_neuron_weights(struct SOM som, int neuron) {
@@ -353,7 +409,15 @@ int main(int argc, char** argv) {
     int opt_train_file_class_index = -1; // the index of the class for each pattern, if used
     char opt_train_file[128] = "default_train_file.txt";
     char opt_save_file[128] = "default_save_file.som";
-    struct SOMTrainingParams params = create_SOMTrainingParams();
+    char opt_weight_init_method[128] = "intelligent";
+    float opt_weight_equalize_val = 0.0;
+    float opt_weight_randomize_min = -1.0;
+    float opt_weight_randomize_max = 1.0;
+    
+
+    // Training happens in two phases, p1 is loose and p2 is tight
+    struct SOMTrainingParams p1_params = create_SOMTrainingParams();
+    struct SOMTrainingParams p2_params = create_SOMTrainingParams();
 
     for (int i=0; i < argc; ++i) {
         char * opt = argv[i];
@@ -370,54 +434,102 @@ int main(int argc, char** argv) {
 
         if (strcmp(opt, "--rows") == 0) {
             opt_rows = atoi(arg);
-            printf("Set rows %d\n", opt_rows);
         }
         else if (strcmp(opt, "--cols") == 0) {
             opt_cols = atoi(arg);
-            printf("Set cols %d\n", opt_cols);
         }
         else if (strcmp(opt, "--input-dims") == 0) {
             opt_input_dims = atoi(arg);
-            printf("Set input_dims %d\n", opt_input_dims);
         }
         else if (strcmp(opt, "--train") == 0) {
             strcpy(opt_train_file, arg);
-            printf("Set train file %s\n", opt_train_file);
         }
         else if (strcmp(opt, "--train-file-class-index") == 0) {
             opt_train_file_class_index = atoi(arg);
-            printf("Set train file class index to %d\n", opt_train_file_class_index);
         }
         else if (strcmp(opt, "--save") == 0) {
             strcpy(opt_save_file, arg);
-            printf("Set save file %s\n", opt_save_file);
         }
-        else if (strcmp(opt, "--iterations") == 0) {
-            params.iterations = atoi(arg);
-            printf("Set iterations %d\n", params.iterations);
+        else if (strcmp(opt, "--weight-init-method") == 0) {
+            strcpy(opt_weight_init_method, arg);
         }
-        else if (strcmp(opt, "--learn-rate-initial") == 0) {
-            params.learn_rate_initial = atof(arg);
-            printf("Set learn_rate_initial %f\n", params.learn_rate_initial);
+        else if (strcmp(opt, "--weight-equalize-val") == 0) {
+            opt_weight_equalize_val = atof(arg);
         }
-        else if (strcmp(opt, "--learn-rate-final") == 0) {
-            params.learn_rate_final = atof(arg);
-            printf("Set learn_rate_final %f\n", params.learn_rate_final);
+        else if (strcmp(opt, "--weight-randomize-min") == 0) {
+            opt_weight_randomize_min = atof(arg);
         }
-        else if (strcmp(opt, "--n-radius-initial") == 0) {
-            params.n_radius_initial = atof(arg);
-            printf("Set n_radius_initial %f\n", params.n_radius_initial);
+        else if (strcmp(opt, "--weight-randomize-max") == 0) {
+            opt_weight_randomize_max = atof(arg);
         }
-        else if (strcmp(opt, "--n-radius-final") == 0) {
-            params.n_radius_final = atof(arg);
-            printf("Set n_radius_final %f\n", params.n_radius_final);
+        else if (strcmp(opt, "--p1-iterations") == 0) {
+            p1_params.iterations = atoi(arg);
+        }
+        else if (strcmp(opt, "--p2-iterations") == 0) {
+            p2_params.iterations = atoi(arg);
+        }
+        else if (strcmp(opt, "--p1-learn-rate-initial") == 0) {
+            p1_params.learn_rate_initial = atof(arg);
+        }
+        else if (strcmp(opt, "--p2-learn-rate-initial") == 0) {
+            p2_params.learn_rate_initial = atof(arg);
+        }
+        else if (strcmp(opt, "--p1-learn-rate-final") == 0) {
+            p1_params.learn_rate_final = atof(arg);
+        }
+        else if (strcmp(opt, "--p2-learn-rate-final") == 0) {
+            p2_params.learn_rate_final = atof(arg);
+        }
+        else if (strcmp(opt, "--p1-n-radius-initial") == 0) {
+            p1_params.n_radius_initial = atof(arg);
+        }
+        else if (strcmp(opt, "--p2-n-radius-initial") == 0) {
+            p2_params.n_radius_initial = atof(arg);
+        }
+        else if (strcmp(opt, "--p1-n-radius-final") == 0) {
+            p1_params.n_radius_final = atof(arg);
+        }
+        else if (strcmp(opt, "--p2-n-radius-final") == 0) {
+            p2_params.n_radius_final = atof(arg);
         }
     }
+
+    printf("Set rows: %d\n", opt_rows);
+    printf("Set input_dims: %d\n", opt_input_dims);
+    printf("Set cols: %d\n", opt_cols);
+    printf("Set train file: \"%s\"\n", opt_train_file);
+    printf("Set train file class index to: %d\n", opt_train_file_class_index);
+    printf("Set save file: \"%s\"\n", opt_save_file);
+    printf("Set weight init method: %s\n", opt_weight_init_method);
+    printf("Set weight equalize val: %f\n", opt_weight_equalize_val);
+    printf("Set weight randomize min: %f\n", opt_weight_randomize_min);
+    printf("Set weight randomize max: %f\n", opt_weight_randomize_max);
+    printf("Set p1 iterations: %d\n", p1_params.iterations);
+    printf("Set p2 iterations: %d\n", p2_params.iterations);
+    printf("Set p1 learn_rate_initial: %f\n", p1_params.learn_rate_initial);
+    printf("Set p2 learn_rate_initial: %f\n", p2_params.learn_rate_initial);
+    printf("Set p1 learn_rate_final: %f\n", p1_params.learn_rate_final);
+    printf("Set p2 learn_rate_final: %f\n", p2_params.learn_rate_final);
+    printf("Set p1 n_radius_initial: %f\n", p1_params.n_radius_initial);
+    printf("Set p2 n_radius_initial: %f\n", p2_params.n_radius_initial);
+    printf("Set p1 n_radius_final: %f\n", p1_params.n_radius_final);
+    printf("Set p2 n_radius_final: %f\n", p2_params.n_radius_final);
     printf("\n");
 
     struct SOM som = create_SOM(opt_rows, opt_cols, opt_input_dims);
-    normalize_weight_vectors(som, 0);
-    train_SOM(som, params, opt_train_file, opt_train_file_class_index);
+
+    if (strcmp(opt_weight_init_method, "intelligent") == 0) {
+        intelligently_randomize_weight_vectors(som, opt_train_file, opt_train_file_class_index);
+    }
+    else if (strcmp(opt_weight_init_method, "randomize") == 0) {
+        randomize_weight_vectors(som, opt_weight_randomize_min, opt_weight_randomize_max);
+    }
+    else if (strcmp(opt_weight_init_method, "equalize") == 0) {
+        equalize_weight_vectors(som, opt_weight_equalize_val);
+    }
+
+    train_SOM(som, p1_params, 1, opt_train_file, opt_train_file_class_index);
+    train_SOM(som, p2_params, 2, opt_train_file, opt_train_file_class_index);
     save_SOM(som, opt_save_file);
 
     return 0;

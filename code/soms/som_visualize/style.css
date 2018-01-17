@@ -23,7 +23,7 @@
 
 #sample_patterns_box {
     flex: 2;
-    overflow-y: auto;
+    overflow: auto;
     max-height: 800px;
 }
 
@@ -73,13 +73,12 @@
     border: 1px solid grey;
     background: rgba(152,251,152, 200);
     background-opacity: 0.5;
-    display: flex;
 }
 
 .input_pattern_tile_cell {
     padding: 5px;
     height: 20px;
+    width: 80px;
     border-left: 1px dotted grey;
     border-right: 1px dotted grey;
-    flex-basis: 40px;
 }

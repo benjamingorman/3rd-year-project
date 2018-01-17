@@ -122,14 +122,15 @@ $("#input_pattern_test").click(function() {
 });
 
 $("#input_patterns_file_select").change(function(evt) {
-    console.log("foo");
     console.log(evt.target.files);
     if (evt.target.files.length > 0) {
+        $("#input_patterns_table").empty();
         let file = evt.target.files[0];
         let reader = new FileReader();
         reader.onload = function() {
             let classes_included = $("#classes_included_checkbox").is(":checked");
-            loadSampleInputPatterns(reader.result, classes_included);
+            let class_index = parseInt($("#input_class_index").val());
+            loadSampleInputPatterns(reader.result, classes_included, class_index);
         }
         reader.readAsText(file);
     }
@@ -240,10 +241,16 @@ function resetNeuronStyles() {
     });
 }
 
-function loadSampleInputPatterns(text, classes_included) {
+function loadSampleInputPatterns(text, classes_included, class_index) {
     console.log("Loading sample input patterns...");
     console.log("classes included", classes_included);
+    console.log("class index", class_index);
     CURRENT_PATTERN_LIST = [];
+
+    if (typeof(class_index) != "number" || isNaN(class_index)) {
+        console.log("Set class index to -1");
+        class_index = -1;
+    }
 
     for (let patternString of text.split("\n")) {
         if (patternString.length == 0)
@@ -253,20 +260,21 @@ function loadSampleInputPatterns(text, classes_included) {
         let parts = patternString.split(",");
         if (classes_included) {
             // class should be the final element
-            pattern_class = parts.pop();
+            pattern_class = parts.splice(class_index, 1)[0];
         }
 
         let pattern = parts.map(parseFloat);
+        //console.log("class", pattern_class, "pattern", pattern);
         CURRENT_PATTERN_LIST.push({pattern: pattern, pattern_class: pattern_class});
     }
 
     for (let i=0; i < CURRENT_PATTERN_LIST.length; ++i) {
         let pat = CURRENT_PATTERN_LIST[i];
-        let elem = $(`<div class='input_pattern_tile code_font' data-index=${i}></div>`);
+        let elem = $(`<tr class='input_pattern_tile code_font' data-index=${i}></tr>`);
         for (let x of pat.pattern) {
-            elem.append($(`<div class='input_pattern_tile_cell'>${x}</div>`));
+            elem.append($(`<td class='input_pattern_tile_cell'>${x}</td>`));
         }
-        $("#input_patterns_box").append(elem);
+        $("#input_patterns_table").append(elem);
         elem.click(onClickInputPatternTile);
 
         if (classes_included) {
