@@ -5,10 +5,12 @@
 #include <regex.h>
 #include <math.h>
 #include <float.h>
+#include <stdbool.h>
 
 #define STATUS_OK 0
 #define STATUS_ERROR 1
 #define STATUS_EOF 2
+#define LINE_BUF_SIZE 2048
 
 
 struct SOM {
@@ -77,6 +79,7 @@ int save_SOM(struct SOM som, char* filepath) {
             fprintf(f, ",");
     }
 
+    printf("Saved SOM to %s\n", filepath);
     fclose(f);
     return STATUS_OK;
 }
@@ -129,50 +132,33 @@ int load_SOM(struct SOM * som, char* filepath) {
     return STATUS_OK;
 }
 
-int read_input_file_line(FILE *f, float * input_vector, int dims) {
-    char * line = NULL;
-    size_t len = 0;
-    ssize_t read;
+int read_input_file_line(FILE *fp, char * line) {
+    size_t buf_size = LINE_BUF_SIZE;
+    ssize_t num_chars_read = getline(&line, &buf_size, fp);
 
-    read = getline(&line, &len, f);
-
-    int ret_code = 0;
-    if (read == -1) {
-        ret_code = STATUS_EOF;
+    if (num_chars_read == -1) {
+        return STATUS_EOF;
     }
     else {
-        /*
-        printf("Read line of length %zu :\n", read);
-        printf("%s", line);
-        */
+        return STATUS_OK;
+    }
+}
 
-        int input_vector_ptr = 0;
-        char number_buf[50];
-        int number_buf_ptr = 0;
-        char c;
-        for (int i=0; i < read; ++i) {
-            c = line[i];
+int parse_input_line(char * line, int class_index, float * vector, int dims) {
+    char * token = strtok(line, ",");
+    int token_index = 0;
+    int vec_index = 0;
 
-            if (c == ',' || c == '\n') {
-                number_buf[number_buf_ptr] = '\0';
-                number_buf_ptr = 0;
-                sscanf(number_buf, "%f", &(input_vector[input_vector_ptr++]));
-            }
-            else if (input_vector_ptr >= dims) {
-                printf("ERROR: Input file has too many numbers on one row\n");
-                ret_code = 1;
-                break;
-            }
-            else {
-                number_buf[number_buf_ptr++] = c;
-            }
+    while(token != NULL) {
+        //printf("index %d, token: %s\n", token_index, token);
+        if (token_index != class_index) {
+            vector[vec_index++] = atof(token);
         }
-
-        ret_code = 0;
+        token = strtok(NULL, ",");
+        token_index++;
     }
 
-    free(line);
-    return ret_code;
+    return STATUS_OK;;
 }
 
 float euclidean_distance(float * vec_a, float * vec_b, int dims) {
@@ -279,45 +265,59 @@ void adjust_weights(struct SOM som, float * input_vec, int bmu, float learn_rate
 
 
 // Expects CSV of floats as file format
-void train_SOM(struct SOM som, struct SOMTrainingParams params,
-        char * train_set_filepath) {
-    FILE *input_file = fopen(train_set_filepath, "r");
-    if (input_file == NULL) {
-        printf("Error opening file: %s\n", train_set_filepath);
+// If classes are included then the index can be specified and it will be ignored
+void train_SOM(
+        struct SOM som,
+        struct SOMTrainingParams params,
+        char * train_filepath,
+        int train_file_class_index
+        )
+{
+    printf("===== TRAINING =====\n");
+    FILE *fp = fopen(train_filepath, "r");
+    if (fp == NULL) {
+        printf("Error opening file: %s\n", train_filepath);
         return;
     }
 
-    float learn_rate;
-    float n_radius;
-    int ret_code;
-    float progress;
     float input_vector[som.input_dims];
+    char * input_line_buf = (char *)malloc(LINE_BUF_SIZE);
+    int iteration = 0;
+    int file_rewinds = 0;
 
-    for (int i=0; i < params.iterations; ++i) {
-        progress = i/(params.iterations-1);
-        printf("Progress: %0.0f%%, Iteration %d\r", progress*100, i);
+    for (int i=0; (iteration = i-file_rewinds) < params.iterations; ++i) {
+        float progress = iteration/(float)(params.iterations-1);
+        int status = read_input_file_line(fp, input_line_buf);
 
-        learn_rate = linear_blend(params.learn_rate_initial,
-                                  params.learn_rate_final, progress);
-        n_radius = linear_blend(params.n_radius_initial,
-                                params.n_radius_final, progress);
-
-        ret_code = read_input_file_line(input_file, input_vector, som.input_dims);
-        if (ret_code == STATUS_ERROR) {
+        if (status == STATUS_ERROR) {
             printf("ERROR: Could not read input file\n");
             break;
         }
-        else if (ret_code == STATUS_EOF) {
+        else if (status == STATUS_EOF) {
             // If we get to the end of the input file then cycle back to the beginning and read a new line
-            rewind(input_file);
-            ret_code = read_input_file_line(input_file, input_vector, som.input_dims);
+            rewind(fp);
+            file_rewinds++;
+            //printf("Rewinding input file...\n");
+            continue;
         }
-        assert(ret_code == STATUS_OK);
+        assert(status == STATUS_OK);
+
+        parse_input_line(input_line_buf, train_file_class_index, input_vector, som.input_dims);
+
+        if (iteration % 100 == 0)
+            printf("Progress: %0.1f%%, Iteration %d\r", progress*100, iteration);
+
+        float learn_rate = linear_blend(params.learn_rate_initial,
+                                  params.learn_rate_final, progress);
+        float n_radius = linear_blend(params.n_radius_initial,
+                                params.n_radius_final, progress);
 
         int bmu = find_bmu(som, input_vector);
         adjust_weights(som, input_vector, bmu, learn_rate, n_radius);
     }
-    printf("\n");
+
+    free(input_line_buf);
+    printf("\n\n");
 }
 
 float rand_float_range(float min, float max) {
@@ -350,6 +350,7 @@ int main(int argc, char** argv) {
     int opt_rows = 10;
     int opt_cols = 10;
     int opt_input_dims = 3;
+    int opt_train_file_class_index = -1; // the index of the class for each pattern, if used
     char opt_train_file[128] = "default_train_file.txt";
     char opt_save_file[128] = "default_save_file.som";
     struct SOMTrainingParams params = create_SOMTrainingParams();
@@ -383,6 +384,10 @@ int main(int argc, char** argv) {
             strcpy(opt_train_file, arg);
             printf("Set train file %s\n", opt_train_file);
         }
+        else if (strcmp(opt, "--train-file-class-index") == 0) {
+            opt_train_file_class_index = atoi(arg);
+            printf("Set train file class index to %d\n", opt_train_file_class_index);
+        }
         else if (strcmp(opt, "--save") == 0) {
             strcpy(opt_save_file, arg);
             printf("Set save file %s\n", opt_save_file);
@@ -407,37 +412,13 @@ int main(int argc, char** argv) {
             params.n_radius_final = atof(arg);
             printf("Set n_radius_final %f\n", params.n_radius_final);
         }
-
-    int iterations;
-    float learn_rate_initial;
-    float learn_rate_final;
-    float n_radius_initial;
-    float n_radius_final;
     }
+    printf("\n");
 
     struct SOM som = create_SOM(opt_rows, opt_cols, opt_input_dims);
     normalize_weight_vectors(som, 0);
-    train_SOM(som, params, opt_train_file);
+    train_SOM(som, params, opt_train_file, opt_train_file_class_index);
     save_SOM(som, opt_save_file);
-
-
-    /*
-    randomize_weight_vectors(som, -2, 2);
-    train_SOM(som, "sample_input_file.txt");
-
-    float x[3] = {0.0, 0.0, 0.0};
-    find_bmu(som, x);
-
-    struct SOM som = create_SOM(10, 10, 3);
-    struct SOMTrainingParams params = create_SOMTrainingParams();
-    normalize_weight_vectors(som, 0);
-    train_SOM(som, params, "sample_input_file.txt");
-    save_SOM(som, "foo.som");
-
-    struct SOM som = create_SOM(100, 100, 4);
-    randomize_weight_vectors(som, -2, 2);
-    save_SOM(som, "big_random.som");
-    */
 
     return 0;
 }

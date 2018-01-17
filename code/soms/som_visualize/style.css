@@ -2,13 +2,29 @@
     display: flex;
 }
 
-#neuron_info_box {
+.container {
+    border: 1px solid lightblue;
+    margin: 10px 5px;
+    padding: 5px;
     flex: 1;
-    height: 800px;
-    position: relative;
-    margin: 0px;
-    margin-right: 10px;
+}
+
+.container input, .container button {
+    margin: 3px 0px;
+}
+
+.container h3 {
+    margin-top: 0;
+}
+
+#neuron_info_box {
     overflow-y: auto;
+}
+
+#sample_patterns_box {
+    flex: 2;
+    overflow-y: auto;
+    max-height: 800px;
 }
 
 #viz_box {
@@ -36,15 +52,6 @@
     min-width: 300px;
 }
 
-.container {
-    border: 1px solid lightblue;
-    margin: 10px 0;
-    padding: 5px;
-}
-
-.container h3 {
-    margin-top: 0;
-}
 
 .neuron_square {
     position: absolute;
@@ -52,4 +59,27 @@
     border: 1px solid grey;
     width: 20px;
     height: 20px;
+}
+
+#input_pattern_text {
+    font-size: 18px;
+}
+
+.code_font {
+    font-family: Courier, serif;
+}
+
+.input_pattern_tile {
+    border: 1px solid grey;
+    background: rgba(152,251,152, 200);
+    background-opacity: 0.5;
+    display: flex;
+}
+
+.input_pattern_tile_cell {
+    padding: 5px;
+    height: 20px;
+    border-left: 1px dotted grey;
+    border-right: 1px dotted grey;
+    flex-basis: 40px;
 }

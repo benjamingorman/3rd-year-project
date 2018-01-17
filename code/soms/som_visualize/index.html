@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>title</title>
+    <title>SOM Visualizer</title>
   <link rel="stylesheet" href="style.css" type="text/css">
   </head>
   <body>
@@ -13,13 +13,24 @@
         <br>
         <input type="file" id="som_file_select"/>
     </div>
-    <div class="container">
-        <h3>Test input pattern</h3>
-        <input id="input_pattern_text" type="text" value="1.1,2.2,3.3">
-        <button id="input_pattern_test">Test</button>
-    </div>
-    <br/>
     <div class="row">
+        <div class="container">
+            <h3>Test input pattern</h3>
+            <input id="input_pattern_text" class="code_font" type="text" value="1.1,2.2,3.3">
+            <button id="input_pattern_test">Test</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="container" id="sample_patterns_box">
+            <h3>Load sample input patterns</h3>
+            <input type="checkbox" id="classes_included_checkbox" />
+            <label for="classes_included_checkbox">Classes included?</label>
+            <br>
+            <input type="file" id="input_patterns_file_select"/>
+            <br>
+            <button id="label_neurons_with_classes_btn">Label neurons with classes</button>
+            <div id="input_patterns_box"></div>
+        </div>
         <div class="container" id="neuron_info_box">
             <h3>Neuron info</h3>
             <h4>Index: <span id="neuron_info_index"></span><h4>
@@ -27,7 +38,7 @@
             <h4>Weight vector:</h4>
             <p id="neuron_info_weights"></p>
         </div>
-        <div id="viz_box">
+        <div id="viz_box" class="container">
             <div class="buttons">
                 <button class="zoom-in">Zoom In</button>
                 <button class="zoom-out">Zoom Out</button>
