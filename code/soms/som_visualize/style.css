@@ -1,12 +1,20 @@
+body {
+    background: #202030;
+    color: white;
+    font-family: 'Roboto Mono', monospace;
+}
+
 .row {
     display: flex;
 }
 
 .container {
-    border: 1px solid lightblue;
+    border: 1px solid #6668BB;
     margin: 10px 5px;
     padding: 5px;
     flex: 1;
+    background: #403E61;
+    box-shadow: 3px 3px #302E51;
 }
 
 .container input, .container button {
@@ -14,7 +22,16 @@
 }
 
 .container h3 {
-    margin-top: 0;
+    margin: 0;
+    display: relative;
+    max-width: 400px;
+    padding: 5px;
+    border: 1px solid white;
+    margin-left: -6px;
+    margin-top: -6px;
+    margin-bottom: 5px;
+    border: 1px solid #6668BB;
+    background: #302E51;
 }
 
 #neuron_info_box {
@@ -30,7 +47,6 @@
 #viz_box {
     flex: 9;
     height: 800px;
-    border: 1px solid lightblue;
     overflow: hidden;
     position: relative;
 }
@@ -55,8 +71,8 @@
 
 .neuron_square {
     position: absolute;
-    background: lightblue;
-    border: 1px solid grey;
+    background: white;
+    border: 1px solid #6668BB;
     width: 20px;
     height: 20px;
 }
@@ -65,9 +81,11 @@
     font-size: 18px;
 }
 
+/*
 .code_font {
     font-family: Courier, serif;
 }
+*/
 
 .input_pattern_tile {
     border: 1px solid grey;

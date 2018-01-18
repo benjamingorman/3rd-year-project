@@ -115,7 +115,7 @@ $("#input_pattern_test").click(function() {
         for (let i=0; i < CURRENT_SOM.getNumNeurons(); ++i) {
             let match_value = CURRENT_SOM.getInputMatchToNeuron(input_vec, i, best_dist, worst_dist);
 
-            $("#neuron"+i).css("background", "blue");
+            $("#neuron"+i).css("background", "white");
             $("#neuron"+i).css("opacity", match_value);
         }
     }
