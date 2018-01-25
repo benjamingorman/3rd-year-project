@@ -114,9 +114,13 @@ $("#input_pattern_test").click(function() {
         let {bmu, best_dist, worst_dist} = CURRENT_SOM.findBMU(input_vec);
         for (let i=0; i < CURRENT_SOM.getNumNeurons(); ++i) {
             let match_value = CURRENT_SOM.getInputMatchToNeuron(input_vec, i, best_dist, worst_dist);
+            let r = Math.floor(match_value * 255);
+            let g = Math.floor(match_value * 255);
+            let b = Math.floor(match_value * 255);
+            let color = "rgb("+r+","+g+","+b+")";
+            console.log(match_value, "color", color);
 
-            $("#neuron"+i).css("background", "white");
-            $("#neuron"+i).css("opacity", match_value);
+            $("#neuron"+i).css("background", color);
         }
     }
 });
