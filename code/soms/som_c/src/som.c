@@ -288,7 +288,12 @@ void train_SOM(
     int file_rewinds = 0;
 
     for (int i=0; (iteration = i-file_rewinds) < params.iterations; ++i) {
-        float progress = iteration/(float)(params.iterations-1);
+        float progress;
+        if (params.iterations == 1)
+            progress = 0;
+        else
+            progress = iteration/(float)(params.iterations-1);
+
         int status = read_input_file_line(fp, input_line_buf);
 
         if (status == STATUS_ERROR) {
