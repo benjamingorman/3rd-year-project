@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>title</title>
+        <link rel="stylesheet" href="stylesheet.css" type="text/css">
+    </head>
+    <body>
+        <div id="impress">
+            <div class="step" data-x="0" data-y="0" data-scale="1">
+                <h2>Using Self-Organizing Maps to generate encodings for CMMs</h1>
+                <h3 class="subtitle">Benjamin Gorman</h3>
+                <h3 class="subtitle">Supervisor: Simon O'Keefe</h3>
+            </div>
+            <div id="overview" class="step" data-scale="5">
+            </div>
+            <div class="step" data-x="-2000" data-y="0">
+                <h2>Self Organizing Maps</h2>
+                    <p>The purpose of a SOM is to convert high-dimensional data to low-dimensional data.
+                    </p>
+                    <div>
+                    $$
+                    \begin{pmatrix}
+                    a \\
+                    b \\
+                    c \\
+                    d \\
+                    \end{pmatrix}
+                    \rightarrow
+                    SOM
+                    \rightarrow
+                    \begin{pmatrix}
+                    x \\
+                    y \\
+                    \end{pmatrix}
+                    $$
+                    </div>
+            </div>
+            <div class="step" data-x="-2300" data-y="600" data-scale="0.2">
+                <p>SOMs consist of a lattice of neurons. The lattice is usually a square or hexagonal grid.</p>
+                <img src="iris_som.png"/>
+                <div class="row">
+                    <!--<img src="hex_som.png"/>-->
+                </div>
+            </div>
+            <div class="step" data-x="-2370" data-y="580" data-scale="0.02">
+                <p>Every neuron has a <i>weight vector</i> with the same dimensions as the input data
+                </p>
+                $$
+                    \begin{pmatrix}
+                    6.9 \\
+                    3.2 \\
+                    5.7 \\
+                    2.3 \\
+                    \end{pmatrix}
+                $$
+            </div>
+        </div>
+
+        <div id="impress-toolbar"></div>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+        <script src="impress.js" type="text/javascript"></script>
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js" type="text/javascript"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/config/TeX-AMS_HTML-full.js" type="text/javascript"></script>
+        <script src="main.js" type="text/javascript"></script>
+    </body>
+</html>
