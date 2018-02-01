@@ -1,9 +1,10 @@
-../../som_c/bin/som --rows 12 \
+som --rows 12 \
     --cols 12 \
     --input-dims 9 \
     --train glass.data.noids \
-    --train-file-class-index 9 \
-    --save glass.som \
+    --trainfile-class-index 9 \
+    --save glass.intelligent.som \
+    --weight-init-method intelligent \
     --p1-iterations 1000 \
     --p1-learn-rate-initial 0.10 \
     --p1-learn-rate-final 0.01  \

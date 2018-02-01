@@ -3,10 +3,9 @@
     --input-dims 4 \
     --train iris.data.train120 \
     --train-file-class-index 4 \
-    --save iris.init_equalize.som \
+    --save iris.equalize.som \
     --weight-init-method equalize \
     --weight-equalize-value 0 \
-    --normalize-inputs \
     --p1-iterations 1000 \
     --p1-learn-rate-initial 0.10 \
     --p1-learn-rate-final 0.01  \

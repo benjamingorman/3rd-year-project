@@ -6,12 +6,10 @@
 #include <math.h>
 #include <float.h>
 #include <stdbool.h>
-#include <ctype.h>
 
 #define STATUS_OK 0
 #define STATUS_ERROR 1
-#define STATUS_EMPTY_LINE 2
-#define STATUS_EOF 3
+#define STATUS_EOF 2
 #define LINE_BUF_SIZE 2048
 
 
@@ -135,24 +133,12 @@ int load_SOM(struct SOM * som, char* filepath) {
     return STATUS_OK;
 }
 
-bool is_line_empty(const char *s) {
-    while (*s != '\0') {
-        if (!isspace((unsigned char)*s))
-            return false;
-        s++;
-    }
-    return true;
-}
-
 int read_input_file_line(FILE *fp, char * line) {
     size_t buf_size = LINE_BUF_SIZE;
     ssize_t num_chars_read = getline(&line, &buf_size, fp);
 
     if (num_chars_read == -1) {
         return STATUS_EOF;
-    }
-    else if (is_line_empty(line)) {
-        return STATUS_EMPTY_LINE;
     }
     else {
         return STATUS_OK;
@@ -248,11 +234,8 @@ float neuron_neighbourhood_function(struct SOM som, int n1, int n2, float n_radi
 }
 
 float linear_blend(float start, float end, float pct) {
+    assert(0.0 <= pct && pct <= 1.0);
     return start + (end - start) * pct;
-}
-
-float get_linear_blend(float start, float end, float middle) {
-    return (middle - start) / (end - start);
 }
 
 // Adds vec * scalar to the given neuron's weight matrix
@@ -281,78 +264,6 @@ void adjust_weights(struct SOM som, float * input_vec, int bmu, float learn_rate
     }
 }
 
-void find_normalize_minima_maxima(
-        char * train_file,
-        int train_file_class_index,
-        int input_dims,
-        float * normalize_minima,
-        float * normalize_maxima
-        ) {
-    FILE *fp = fopen(train_file, "r");
-    if (fp == NULL) {
-        printf("Error opening file: %s\n", train_file);
-        return;
-    }
-
-    for (int i = 0; i < input_dims; i++) {
-        normalize_minima[i] = FLT_MAX;
-        normalize_maxima[i] = FLT_MIN;
-    }
-
-    int status; 
-    char * input_line_buf = (char *)malloc(LINE_BUF_SIZE);
-    float input_vector[input_dims];
-
-    while (true) {
-        status = read_input_file_line(fp, input_line_buf);
-        if (status == STATUS_EMPTY_LINE)
-            continue;
-        else if (status == STATUS_EOF)
-            break;
-        else {
-            parse_input_line(input_line_buf, train_file_class_index, input_vector, input_dims);
-
-            for (int i = 0; i < input_dims; i++) {
-                if (input_vector[i] < normalize_minima[i])
-                    normalize_minima[i] = input_vector[i];
-                else if (input_vector[i] > normalize_maxima[i])
-                    normalize_maxima[i] = input_vector[i];
-            }
-        }
-    }
-
-    free(input_line_buf);
-}
-
-void normalize_input_vector(int dims, float * input_vector, float * normalize_minima, float * normalize_maxima) {
-    for (int i=0; i < dims; ++i) {
-        float min = normalize_minima[i];
-        float max = normalize_maxima[i];
-        input_vector[i] = get_linear_blend(min, max, input_vector[i]);
-    }
-}
-
-void denormalize_neuron_weight_vector(
-        struct SOM som,
-        int neuron,
-        float * normalize_minima,
-        float * normalize_maxima
-        ) {
-    float * weight_vec = get_neuron_weight_vector(som, neuron);
-
-    for (int i = 0; i < som.input_dims; i++) {
-        float min = normalize_minima[i];
-        float max = normalize_maxima[i];
-        weight_vec[i] = linear_blend(min, max, weight_vec[i]);
-    }
-}
-
-void denormalize_som(struct SOM som, float * normalize_minima, float * normalize_maxima) {
-    int num_neurons = som.rows * som.cols;
-    for (int i = 0; i < num_neurons; i++) {
-        denormalize_neuron_weight_vector(som, i, normalize_minima, normalize_maxima);
-    }
-}
 
 // Expects CSV of floats as file format
 // If classes are included then the index can be specified and it will be ignored
@@ -361,10 +272,7 @@ void train_SOM(
         struct SOMTrainingParams params,
         int phase,
         char * train_filepath,
-        int train_file_class_index,
-        bool normalize_inputs,
-        float * normalize_minima, // min values of each input dimension
-        float * normalize_maxima // max values of each input dimension
+        int train_file_class_index
         )
 {
     printf("===== TRAINING Phase %d =====\n", phase);
@@ -380,21 +288,12 @@ void train_SOM(
     int file_rewinds = 0;
 
     for (int i=0; (iteration = i-file_rewinds) < params.iterations; ++i) {
-        float progress;
-        if (params.iterations == 1)
-            progress = 0;
-        else
-            progress = iteration/(float)(params.iterations-1);
-
+        float progress = iteration/(float)(params.iterations-1);
         int status = read_input_file_line(fp, input_line_buf);
 
         if (status == STATUS_ERROR) {
             printf("ERROR: Could not read input file\n");
             break;
-        }
-        else if (status == STATUS_EMPTY_LINE) {
-            printf("Skipping empty line in input file...\n");
-            continue;
         }
         else if (status == STATUS_EOF) {
             // If we get to the end of the input file then cycle back to the beginning and read a new line
@@ -407,8 +306,6 @@ void train_SOM(
 
         parse_input_line(input_line_buf, train_file_class_index, input_vector, som.input_dims);
 
-        if (normalize_inputs)
-            normalize_input_vector(som.input_dims, input_vector, normalize_minima, normalize_maxima);
 
         float learn_rate = linear_blend(params.learn_rate_initial,
                                   params.learn_rate_final, progress);
@@ -416,8 +313,7 @@ void train_SOM(
                                 params.n_radius_final, progress);
 
         if (iteration % 100 == 0)
-            printf("Progress: %0.1f%%, Iteration %d, learn_rate %f, n_radius %f\r",
-                    progress*100, iteration, learn_rate, n_radius);
+            printf("Progress: %0.1f%%, Iteration %d, learn_rate %f, n_radius %f\r", progress*100, iteration, learn_rate, n_radius);
 
         int bmu = find_bmu(som, input_vector);
         adjust_weights(som, input_vector, bmu, learn_rate, n_radius);
@@ -506,17 +402,6 @@ void print_neuron_weights(struct SOM som, int neuron) {
     printf("\n");
 }
 
-void print_vector(float * vec, int dims) {
-    printf("(");
-    for (int i = 0; i < dims; i++) {
-        printf("%.2f", vec[i]);
-        if (i != dims - 1) {
-            printf(", ");
-        }
-    }
-    printf(")");
-}
-
 int main(int argc, char** argv) {
     int opt_rows = 10;
     int opt_cols = 10;
@@ -528,7 +413,7 @@ int main(int argc, char** argv) {
     float opt_weight_equalize_val = 0.0;
     float opt_weight_randomize_min = -1.0;
     float opt_weight_randomize_max = 1.0;
-    bool opt_normalize_inputs = false;
+    
 
     // Training happens in two phases, p1 is loose and p2 is tight
     struct SOMTrainingParams p1_params = create_SOMTrainingParams();
@@ -576,9 +461,6 @@ int main(int argc, char** argv) {
         }
         else if (strcmp(opt, "--weight-randomize-max") == 0) {
             opt_weight_randomize_max = atof(arg);
-        }
-        else if (strcmp(opt, "--normalize-inputs") == 0) {
-            opt_normalize_inputs = true;
         }
         else if (strcmp(opt, "--p1-iterations") == 0) {
             p1_params.iterations = atoi(arg);
@@ -632,7 +514,6 @@ int main(int argc, char** argv) {
     printf("Set p2 n_radius_initial: %f\n", p2_params.n_radius_initial);
     printf("Set p1 n_radius_final: %f\n", p1_params.n_radius_final);
     printf("Set p2 n_radius_final: %f\n", p2_params.n_radius_final);
-    printf("Set normalize inputs: %d\n", opt_normalize_inputs);
     printf("\n");
 
     struct SOM som = create_SOM(opt_rows, opt_cols, opt_input_dims);
@@ -647,31 +528,8 @@ int main(int argc, char** argv) {
         equalize_weight_vectors(som, opt_weight_equalize_val);
     }
 
-    float normalize_minima[opt_input_dims];
-    float normalize_maxima[opt_input_dims];
-
-    if (opt_normalize_inputs) {
-        find_normalize_minima_maxima(opt_train_file, opt_train_file_class_index, opt_input_dims,
-                                     normalize_minima, normalize_maxima);
-
-        printf("Normalize minima: ");
-        print_vector(normalize_minima, opt_input_dims);
-        printf("\n");
-
-        printf("Normalize maxima: ");
-        print_vector(normalize_maxima, opt_input_dims);
-        printf("\n");
-    }
-
-    train_SOM(som, p1_params, 1, opt_train_file, opt_train_file_class_index,
-              opt_normalize_inputs, normalize_minima, normalize_maxima);
-    train_SOM(som, p2_params, 2, opt_train_file, opt_train_file_class_index,
-              opt_normalize_inputs, normalize_minima, normalize_maxima);
-
-    if (opt_normalize_inputs) {
-        denormalize_som(som, normalize_minima, normalize_maxima);
-    }
-
+    train_SOM(som, p1_params, 1, opt_train_file, opt_train_file_class_index);
+    train_SOM(som, p2_params, 2, opt_train_file, opt_train_file_class_index);
     save_SOM(som, opt_save_file);
 
     return 0;

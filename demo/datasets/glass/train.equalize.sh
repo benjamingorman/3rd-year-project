@@ -1,18 +1,17 @@
-../../som_c/bin/som --rows 10 \
-    --cols 10 \
-    --input-dims 4 \
-    --train iris.data.train120 \
-    --train-file-class-index 4 \
-    --save iris.init_equalize.som \
+som --rows 12 \
+    --cols 12 \
+    --input-dims 9 \
+    --train glass.data.noids \
+    --trainfile-class-index 9 \
+    --save glass.equalize.som \
     --weight-init-method equalize \
-    --weight-equalize-value 0 \
-    --normalize-inputs \
+    --weight-equalize-val 0 \
     --p1-iterations 1000 \
     --p1-learn-rate-initial 0.10 \
     --p1-learn-rate-final 0.01  \
     --p1-n-radius-initial 5.0 \
     --p1-n-radius-final 2.0 \
-    --p2-iterations 50000 \
+    --p2-iterations 75000 \
     --p2-learn-rate-initial 0.01 \
     --p2-learn-rate-final 0.01  \
     --p2-n-radius-initial 2.0 \
