@@ -522,13 +522,13 @@ int main(int argc, char** argv) {
     int opt_cols = 10;
     int opt_input_dims = 3;
     int opt_train_file_class_index = -1; // the index of the class for each pattern, if used
-    char opt_train_file[128] = "default_train_file.txt";
-    char opt_save_file[128] = "default_save_file.som";
+    char opt_train_file[128] = "data/default_train_file.txt";
+    char opt_save_file[128] = "trained/default_save_file.som";
     char opt_weight_init_method[128] = "intelligent";
     float opt_weight_equalize_val = 0.0;
     float opt_weight_randomize_min = -1.0;
     float opt_weight_randomize_max = 1.0;
-    bool opt_normalize_inputs = false;
+    bool opt_normalize_inputs = true;
 
     // Training happens in two phases, p1 is loose and p2 is tight
     struct SOMTrainingParams p1_params = create_SOMTrainingParams();

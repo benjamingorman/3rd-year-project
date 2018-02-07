@@ -1,3 +1,4 @@
+*.pyc
 *.swp
 code/cmm/cmm
 presentation/node_modules
