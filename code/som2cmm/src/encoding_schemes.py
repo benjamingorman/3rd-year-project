@@ -97,53 +97,8 @@ class QuantizationEncoder(EncodingScheme):
         bin_size = self.get_bin_size(min_val, max_val, num_bins)
         bin_to_use = self.get_bin_to_use(attr, min_val, bin_size, num_bins)
 
-        #print("bin_to_use", bin_to_use, "attr", attr, "min val", min_val, "bin_size", bin_size)
-        for (i, code) in enumerate(self.enumerate_encodings(bits_used, bits_set)):
-            if i == bin_to_use:
-                return code
-
-    def enumerate_encodings(self, bits_used, bits_set):
-        num_encodings = self.get_num_bins(bits_used, bits_set)
-        bit_positions = list(range(bits_set))
-        code = [0] * bits_used
-
-        max_bit = bits_set - 1
-        max_pos = len(code) - 1
-
-        for n in range(num_encodings):
-            #print("encoding " + str(n))
-            for i in range(len(code)):
-                code[i] = 0
-            for pos in bit_positions:
-                code[pos] = 1
-
-            #print("code", code)
-            
-            yield code
-            if n == num_encodings - 1: 
-                break
-
-            # figure out which bit to move
-            rightmost_movable_bit = None
-            for i in reversed(range(bits_set)):
-                pos = bit_positions[i]
-
-                if i == max_bit:
-                    if pos < max_pos:
-                        rightmost_movable_bit = i
-                        break
-                elif bit_positions[i+1] != pos+1:
-                    rightmost_movable_bit = i
-                    break
-
-            # This would only occur if bin_to_use > num_bins
-            assert(rightmost_movable_bit != None)
-            bit_positions[rightmost_movable_bit] += 1
-
-            # Move back all bits ahead
-            for i in reversed(range(bits_set)):
-                if i > rightmost_movable_bit:
-                    bit_positions[i] = bit_positions[rightmost_movable_bit] + (i-rightmost_movable_bit)
+        encoding = new_quantize(bits_used, bits_set, bin_to_use)
+        return encoding
 
     def decode(self, code):
         assert(len(code) == sum(self.bits_per_attr))
@@ -165,13 +120,65 @@ class QuantizationEncoder(EncodingScheme):
         return pattern
 
     def decode_attr(self, code, min_val, max_val, bits_used, bits_set):
-        bin_used = None
-        for (i, other_code) in enumerate(self.enumerate_encodings(bits_used, bits_set)):
-            if code == other_code:
-                bin_used = i
-
-        assert(bin_used != None)
+        bin_used = new_quantize_decode(bits_used, bits_set, code)
 
         num_bins = self.get_num_bins(bits_used, bits_set)
         bin_size = self.get_bin_size(min_val, max_val, num_bins)
         return min_val + bin_size * bin_used
+
+class BaumEncoder(EncodingScheme):
+    pass
+
+def new_quantize(bits_len, bits_set, bin_used):
+    maxX = binomial(bits_len, bits_set)
+    assert(bin_used < maxX)
+    
+    positions = []
+    n = bits_len
+    b = bits_set
+    x = bin_used 
+
+    for _ in range(bits_set):
+        pos = get_first_bit_pos(n, b, x)
+        #print(pos)
+        positions.append(pos)
+
+        for i in range(0, pos):
+            x -= binomial(n-(i+1), b-1)
+
+        b -= 1
+        n -= pos+1
+
+    pat = [0] * bits_len
+    cursor = 0
+    for pos in positions:
+        cursor += pos
+        pat[cursor] = 1
+        cursor += 1
+    return pat
+
+def get_first_bit_pos(n, b, x):
+    if b == 1:
+        return x
+    else:
+        pos = 0
+        y = binomial(n-1, b-1)
+        while y < (x+1): 
+            pos += 1
+            y += binomial(n-(pos+1), b-1)
+        return pos
+
+def new_quantize_decode(bits_len, bits_used, code):
+    y = 0
+    n = bits_len
+    b = bits_used
+    for (i, v) in enumerate(code):
+        if b == 1:
+            y += code[i:].index(1)
+            break
+        else:
+            if v == 1:
+                b -= 1
+            else:
+                y += binomial(n-(i+1), b-1)
+    return y
