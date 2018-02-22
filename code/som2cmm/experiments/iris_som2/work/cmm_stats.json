@@ -1,0 +1,6 @@
+{
+    "correct": 112,
+    "mean bits wrong": 0.35826743580118403,
+    "stdev bits wrong": 0.6150700050491092,
+    "wrong": 38
+}

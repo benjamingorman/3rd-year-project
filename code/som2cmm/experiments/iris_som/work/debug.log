@@ -1,17 +1,17 @@
-[01:09:32]som2cmm:INFO: RUNNING EXPERIMENT
-[01:09:32]som2cmm:INFO: Using config file: config.toml
-[01:09:32]som2cmm:INFO: Using working directory: /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/iris_som/work
-[01:09:32]som2cmm:DEBUG: Parsing input file: cmm_input.txt
-[01:09:32]som2cmm:INFO: *** Running cmm: cmm_input.txt
-[01:09:32]som2cmm:DEBUG: Output directory: /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/iris_som/work
-[01:09:32]som2cmm:DEBUG: Key size: 20
-[01:09:32]som2cmm:DEBUG: Data size: 3
-[01:09:32]som2cmm:DEBUG: Using smart recall: True
-[01:09:32]som2cmm:INFO: * Training...
-[01:09:32]som2cmm:INFO: Training complete.
-[01:09:32]som2cmm:INFO: * Recalling...
-[01:09:32]som2cmm:INFO: Recall complete.
-[01:09:32]som2cmm:DEBUG: Memory file:  /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/iris_som/work/cmm.txt
-[01:09:32]som2cmm:DEBUG: Results file: /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/iris_som/work/cmm_results.txt
-[01:09:32]som2cmm:DEBUG: Stats file:   /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/iris_som/work/cmm_stats.json
-[01:09:32]som2cmm:INFO: DONE
+[01:32:37]som2cmm:INFO: RUNNING EXPERIMENT
+[01:32:37]som2cmm:INFO: Using config file: config.toml
+[01:32:37]som2cmm:INFO: Using working directory: /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/iris_som/work
+[01:32:37]som2cmm:DEBUG: Parsing input file: cmm_input.txt
+[01:32:37]som2cmm:INFO: *** Running cmm: cmm_input.txt
+[01:32:37]som2cmm:DEBUG: Output directory: /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/iris_som/work
+[01:32:37]som2cmm:DEBUG: Key size: 20
+[01:32:37]som2cmm:DEBUG: Data size: 3
+[01:32:37]som2cmm:DEBUG: Using smart recall: True
+[01:32:37]som2cmm:INFO: * Training...
+[01:32:37]som2cmm:INFO: Training complete.
+[01:32:37]som2cmm:INFO: * Recalling...
+[01:32:37]som2cmm:INFO: Recall complete.
+[01:32:37]som2cmm:DEBUG: Memory file:  /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/iris_som/work/cmm.txt
+[01:32:37]som2cmm:DEBUG: Results file: /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/iris_som/work/cmm_results.txt
+[01:32:37]som2cmm:DEBUG: Stats file:   /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/iris_som/work/cmm_stats.json
+[01:32:37]som2cmm:INFO: DONE

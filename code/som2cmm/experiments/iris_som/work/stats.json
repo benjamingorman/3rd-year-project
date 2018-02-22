@@ -1,4 +1,6 @@
 {
+    "exactly right": 111,
     "mean distance": 0.36769552621700463,
-    "mean distance %": 0.36769552621700463
+    "mean distance %": 0.36769552621700463,
+    "not exactly right": 39
 }

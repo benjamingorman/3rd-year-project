@@ -93,6 +93,7 @@ def save_stats_file(output_path, results):
     stats = {}
     distances = []
     distance_pcts = []
+    exactly_right_count = 0
 
     for (key_vec, data_vec, data_recalled) in results:
         key_vec = np.array(key_vec)
@@ -103,8 +104,13 @@ def save_stats_file(output_path, results):
         distances.append(dist)
         distance_pcts.append(dist / np.linalg.norm(data_vec))
 
+        if dist == 0:
+            exactly_right_count += 1
+
     stats["mean distance"] = np.mean(distances)
     stats["mean distance %"] = np.mean(distance_pcts)
+    stats["exactly right"] = exactly_right_count
+    stats["not exactly right"] = len(results) - exactly_right_count
 
     with open(output_path, 'w') as f:
         f.write(json.dumps(stats, indent=4, sort_keys=True))
