@@ -1,0 +1,17 @@
+[00:19:27]som2cmm:INFO: RUNNING EXPERIMENT
+[00:19:27]som2cmm:INFO: Using config file: config.toml
+[00:19:27]som2cmm:INFO: Using working directory: /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/exp_random_quantize/work
+[00:19:28]som2cmm:DEBUG: Parsing input file: cmm_input.txt
+[00:19:28]som2cmm:INFO: *** Running cmm: cmm_input.txt
+[00:19:28]som2cmm:DEBUG: Output directory: /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/exp_random_quantize/work
+[00:19:28]som2cmm:DEBUG: Key size: 150
+[00:19:28]som2cmm:DEBUG: Data size: 150
+[00:19:28]som2cmm:DEBUG: Using smart recall: True
+[00:19:28]som2cmm:INFO: * Training...
+[00:19:28]som2cmm:INFO: Training complete.
+[00:19:28]som2cmm:INFO: * Recalling...
+[00:19:34]som2cmm:INFO: Recall complete.
+[00:19:34]som2cmm:DEBUG: Memory file:  /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/exp_random_quantize/work/cmm.txt
+[00:19:34]som2cmm:DEBUG: Results file: /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/exp_random_quantize/work/cmm_results.txt
+[00:19:34]som2cmm:DEBUG: Stats file:   /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/exp_random_quantize/work/cmm_stats.json
+[00:19:34]som2cmm:INFO: DONE

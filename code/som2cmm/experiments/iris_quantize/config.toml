@@ -1,0 +1,19 @@
+working_directory = "/home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/iris_quantize/work"
+input_patterns_file = "/home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/iris_quantize/iris_patterns.json"
+
+[encoding]
+    [encoding.keys]
+    method = "quantize"
+
+        [encoding.keys.quantize]
+        bits_per_attr = [30, 30, 30, 30]
+        bits_set_per_attr = [1, 1, 1, 1]
+
+    [encoding.values]
+    method = "donothing"
+
+        [encoding.values.donothing]
+        bits_set = 1
+
+[cmm]
+smart_recall = true

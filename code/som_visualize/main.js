@@ -55,6 +55,22 @@ class SOM {
         let match = normalizeValueInRange(worst_dist, dist, best_dist);
         return match;
     }
+
+    getNeuronMagnitude(n) {
+        return vector_magnitude(this.getNeuronWeights(n));
+    }
+
+    getMaxNeuronMagnitude() {
+        let maxMag = Number.NEGATIVE_INFINITY;
+
+        for (let n=0; n < this.getNumNeurons(); ++n) {
+            let mag = this.getNeuronMagnitude(n);
+            if (mag > maxMag)
+                maxMag = mag;
+        }
+
+        return maxMag;
+    }
 }
 
 let CURRENT_SOM;
@@ -137,6 +153,18 @@ $("#input_patterns_file_select").change(function(evt) {
             loadSampleInputPatterns(reader.result, classes_included, class_index);
         }
         reader.readAsText(file);
+    }
+});
+
+$("#color_neurons_by_weight_btn").click(function() {
+    resetNeuronStyles();
+
+    let maxMag = CURRENT_SOM.getMaxNeuronMagnitude();
+    for (let n=0; n < CURRENT_SOM.getNumNeurons(); ++n) {
+        let mag = CURRENT_SOM.getNeuronMagnitude(n);
+        let color = Math.floor((mag / maxMag) * 255);
+
+        $("#neuron"+n).css("background", `rgb(0, ${color}, 0)`);
     }
 });
 

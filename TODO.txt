@@ -1,0 +1,5 @@
+- implement CMM thresholding better. L-max is good apparently. each encoding scheme should offer a different thresholding method
+- add baum code encodingscheme
+- pipeline training som with params in config file?
+
+- Austin "Improved Storage Capacity in Correlation Matrix Memories Storing Fixed Weight Codes"

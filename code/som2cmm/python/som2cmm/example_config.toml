@@ -1,0 +1,17 @@
+working_directory = "/tmp/som2cmm_example/"
+input_patterns_file = "/tmp/som2cmm_example/patterns_input.txt"
+input_patterns_file_class_index = -1
+
+[encoding]
+    [encoding.keys]
+    method = "quantize"
+
+        [encoding.keys.quantize]
+        bits_per_attr = 20
+        bits_set_per_attr = 1
+
+    [encoding.values]
+    copy_keys_encoding = true
+
+[cmm]
+smart_recall = true

@@ -1,0 +1,17 @@
+[01:03:41]som2cmm:INFO: RUNNING EXPERIMENT
+[01:03:41]som2cmm:INFO: Using config file: config.toml
+[01:03:41]som2cmm:INFO: Using working directory: /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/iris_quantize/work
+[01:03:41]som2cmm:DEBUG: Parsing input file: cmm_input.txt
+[01:03:41]som2cmm:INFO: *** Running cmm: cmm_input.txt
+[01:03:41]som2cmm:DEBUG: Output directory: /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/iris_quantize/work
+[01:03:41]som2cmm:DEBUG: Key size: 120
+[01:03:41]som2cmm:DEBUG: Data size: 3
+[01:03:41]som2cmm:DEBUG: Using smart recall: True
+[01:03:41]som2cmm:INFO: * Training...
+[01:03:41]som2cmm:INFO: Training complete.
+[01:03:41]som2cmm:INFO: * Recalling...
+[01:03:41]som2cmm:INFO: Recall complete.
+[01:03:41]som2cmm:DEBUG: Memory file:  /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/iris_quantize/work/cmm.txt
+[01:03:41]som2cmm:DEBUG: Results file: /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/iris_quantize/work/cmm_results.txt
+[01:03:41]som2cmm:DEBUG: Stats file:   /home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/iris_quantize/work/cmm_stats.json
+[01:03:41]som2cmm:INFO: DONE
