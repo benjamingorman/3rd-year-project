@@ -1,0 +1,18 @@
+working_directory = "/home/beng/Projects/3rd-year-project/code/som2cmm/experiments/iris_som3/work"
+input_patterns_file = "/home/beng/Projects/3rd-year-project/code/som2cmm/experiments/iris_som3/iris_patterns.json"
+
+[encoding]
+    [encoding.keys]
+    method = "som"
+
+        [encoding.keys.som]
+        som_file_path = "/home/beng/Projects/3rd-year-project/code/som2cmm/experiments/iris_som3/iris.som"
+
+    [encoding.values]
+    method = "donothing"
+
+        [encoding.values.donothing]
+        bits_set = 1
+
+[cmm]
+smart_recall = true

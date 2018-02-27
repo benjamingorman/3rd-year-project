@@ -1,0 +1,17 @@
+[21:31:54]som2cmm:INFO: RUNNING EXPERIMENT
+[21:31:54]som2cmm:INFO: Using config file: config.toml
+[21:31:54]som2cmm:INFO: Using working directory: /home/beng/Projects/3rd-year-project/code/som2cmm/experiments/iris_som3/work
+[21:31:57]som2cmm:DEBUG: Parsing input file: cmm_input.txt
+[21:31:57]som2cmm:INFO: *** Running cmm: cmm_input.txt
+[21:31:57]som2cmm:DEBUG: Output directory: /home/beng/Projects/3rd-year-project/code/som2cmm/experiments/iris_som3/work
+[21:31:57]som2cmm:DEBUG: Key size: 120
+[21:31:57]som2cmm:DEBUG: Data size: 3
+[21:31:57]som2cmm:DEBUG: Using smart recall: True
+[21:31:57]som2cmm:INFO: * Training...
+[21:31:57]som2cmm:INFO: Training complete.
+[21:31:57]som2cmm:INFO: * Recalling...
+[21:31:57]som2cmm:INFO: Recall complete.
+[21:31:57]som2cmm:DEBUG: Memory file:  /home/beng/Projects/3rd-year-project/code/som2cmm/experiments/iris_som3/work/cmm.txt
+[21:31:57]som2cmm:DEBUG: Results file: /home/beng/Projects/3rd-year-project/code/som2cmm/experiments/iris_som3/work/cmm_results.txt
+[21:31:57]som2cmm:DEBUG: Stats file:   /home/beng/Projects/3rd-year-project/code/som2cmm/experiments/iris_som3/work/cmm_stats.json
+[21:31:57]som2cmm:INFO: DONE
