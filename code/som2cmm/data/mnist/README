@@ -1,0 +1,3 @@
+mnist_train is all 60K items from the mnist training set
+mnist_train_5000 is a 5k subset of these (the first 5k)
+mnist_test_1000 is a 1k subset (immediately following the 5k)
