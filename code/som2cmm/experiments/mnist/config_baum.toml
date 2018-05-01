@@ -1,0 +1,19 @@
+working_directory = "/home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/mnist/baum_encoding/work100"
+input_patterns_file = "/home/userfs/b/bg739/modules/3rd-year-project/code/som2cmm/experiments/mnist/mnist_patterns_100.json"
+
+[encoding]
+    [encoding.keys]
+    method = "baum"
+
+        [encoding.keys.baum]
+        segment_sizes = [50, 50]
+
+    [encoding.values]
+    method = "donothing"
+
+        [encoding.values.donothing]
+        bits_set = 1
+
+[cmm]
+smart_recall = false
+threshold_func = "lmax1"
