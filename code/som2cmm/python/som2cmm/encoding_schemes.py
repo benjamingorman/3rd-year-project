@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import math
 import numpy as np
+import copy
 
 from . import som
 from . import utils
@@ -156,7 +157,27 @@ class QuantizationEncoder(EncodingScheme):
         return min_val + bin_size * bin_used
 
 class BaumEncoder(EncodingScheme):
-    pass
+    def __init__(self, segment_sizes):
+        self.segment_sizes = segment_sizes
+        self.last_baum_code_bits = None
+        self.mappings = {}
+
+    def get_num_bits_in_encoding(self):
+        return len(self.segment_sizes)
+
+    def encode(self, attrs):
+        if len(self.mappings) == 0:
+            baum_code_bits = get_initial_baum_code(self.segment_sizes)
+        else:
+            baum_code_bits = get_next_baum_code(self.segment_sizes, self.last_baum_code_bits) 
+
+        self.last_baum_code_bits = copy.deepcopy(baum_code_bits)
+        baum_code = concrete_baum_code(self.segment_sizes, baum_code_bits)
+        self.mappings[repr(baum_code)] = repr(attrs)
+        return baum_code
+
+    def decode(self, vec):
+        return self.mappings[repr(vec)]
 
 class SOMEncoder(EncodingScheme):
     """Encoder which uses a Self-Organizing Map to perform the encoding"""
@@ -193,6 +214,30 @@ class SOMEncoder(EncodingScheme):
         col = group2.index(1)
         bmuWeights = self.som.getNeuronWeights(row, col)
         return bmuWeights.tolist()
+
+def get_initial_baum_code(segment_sizes):
+    # returns bit positions
+    bit_positions = []
+    for _ in segment_sizes:
+        bit_positions.append(0)
+    return bit_positions
+
+def get_next_baum_code(segment_sizes, bit_positions):
+    for i in range(len(segment_sizes) - 1, -1, -1):
+        if bit_positions[i] < segment_sizes[i] - 1:
+            bit_positions[i] += 1
+            break
+        else:
+            bit_positions[i] = 0
+    return bit_positions
+
+def concrete_baum_code(segment_sizes, bit_positions):
+    code = []
+    for (i, segsize) in enumerate(segment_sizes):
+        seg = [0]*segsize
+        seg[bit_positions[i]] = 1
+        code += seg
+    return code
 
 def new_quantize(bits_len, bits_set, bin_used):
     maxX = utils.binomial(bits_len, bits_set)

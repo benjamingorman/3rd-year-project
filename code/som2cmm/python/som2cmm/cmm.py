@@ -5,6 +5,7 @@ import numpy as np
 import os
 import os.path
 import sys
+import re
 
 from . import utils
 
@@ -55,7 +56,7 @@ def str2bool(v):
 class CMM:
     """Represents a correlation matrix memory."""
 
-    def __init__(self, key_size, data_size, bits_in_key, record_data_items=True):
+    def __init__(self, key_size, data_size, bits_in_key, threshold_func, record_data_items=True):
         """Note that the matrix is shaped with `data_size` rows and `key_size` cols
         e.g.
               k k k k 
@@ -73,6 +74,7 @@ class CMM:
         # This saves having to allocate a new matrix on every insert
         self._work_mat = create_matrix(data_size, key_size)
         self.bits_in_key = bits_in_key
+        self.threshold_func = threshold_func
         self.should_record_data_items = record_data_items
         self.recorded_data_items = []
 
@@ -134,21 +136,24 @@ class CMM:
         return self.threshold(output_vec)
 
     def threshold(self, vec):
-        bits = self.bits_in_key
+        if re.match("lmax\d", self.threshold_func):
+            L = int(re.match("lmax(\d)", self.threshold_func).group(1))
 
-        indices_w_values = []
-        for (i, row) in enumerate(vec):
-            indices_w_values.append((i, row[0]))
+            indices_w_values = []
+            for (i, row) in enumerate(vec):
+                indices_w_values.append((i, row[0]))
 
-        # Sort by value
-        indices_w_values.sort(key=lambda x: -x[1])
-        top = indices_w_values[:bits]
+            # Sort by value
+            indices_w_values.sort(key=lambda x: -x[1])
+            top = indices_w_values[:L]
 
-        new_vec = create_vector(len(vec))
-        for (i, _) in top:
-            new_vec[i][0] = 1
+            new_vec = create_vector(len(vec))
+            for (i, _) in top:
+                new_vec[i][0] = 1
 
-        return vec
+            return new_vec
+        else:
+            raise Exception("Unknown thresholding function", self.threshold_func)
 
 
     def recall_smart(self, key_vec):
@@ -246,13 +251,14 @@ def debug_result(result):
 def run_experiment(input_path, out_dir_path, bits_in_key, config):
     key_size, data_size, pairs = parse_input_file(input_path)
     use_smart_recall = config.get("smart_recall", False)
+    threshold_func = config.get("threshold_func", "unknown")
     log.info("*** Running cmm: {}".format(input_path))
     log.debug("Output directory: {}".format(out_dir_path))
     log.debug("Key size: {}".format(key_size))
     log.debug("Data size: {}".format(data_size))
     log.debug("Using smart recall: {}".format(use_smart_recall))
 
-    cmm = CMM(key_size, data_size, bits_in_key)
+    cmm = CMM(key_size, data_size, bits_in_key, threshold_func)
 
     log.info("* Training...")
     for key_vec, data_vec in pairs:

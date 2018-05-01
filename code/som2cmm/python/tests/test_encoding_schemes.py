@@ -39,9 +39,6 @@ class TestQuantizationEncoder(unittest.TestCase):
         (3, 1.000, [0,0,1,1,1], 0.9),
         ]
 
-    def test_binomial(self):
-        self.assertEqual(enc.binomial(5, 2), 10)
-
     def test_encode_attr(self):
         qe = enc.QuantizationEncoder([], [], [])
 
@@ -110,6 +107,27 @@ class TestQuantizationEncoder(unittest.TestCase):
 
             self.assertEqual(decode1, pat)
             self.assertEqual(decode2, pat)
+
+class TestBaumEncoder(unittest.TestCase):
+
+    def test_it_works(self):
+        print("TESTING BAUM CODES")
+        be = enc.BaumEncoder([2, 3, 4])
+        self.assertEqual(be.encode(0), [1,0, 1,0,0, 1,0,0,0])
+        self.assertEqual(be.encode(1), [1,0, 1,0,0, 0,1,0,0])
+        self.assertEqual(be.encode(2), [1,0, 1,0,0, 0,0,1,0])
+        self.assertEqual(be.encode(3), [1,0, 1,0,0, 0,0,0,1])
+        self.assertEqual(be.encode(4), [1,0, 0,1,0, 1,0,0,0])
+        self.assertEqual(be.encode(5), [1,0, 0,1,0, 0,1,0,0])
+        self.assertEqual(be.encode(6), [1,0, 0,1,0, 0,0,1,0])
+        self.assertEqual(be.encode(7), [1,0, 0,1,0, 0,0,0,1])
+        self.assertEqual(be.encode(8), [1,0, 0,0,1, 1,0,0,0])
+        self.assertEqual(be.encode(9), [1,0, 0,0,1, 0,1,0,0])
+        self.assertEqual(be.encode(10), [1,0, 0,0,1, 0,0,1,0])
+        self.assertEqual(be.encode(11), [1,0, 0,0,1, 0,0,0,1])
+        self.assertEqual(be.encode(12), [0,1, 1,0,0, 1,0,0,0])
+        self.assertEqual(be.encode(13), [0,1, 1,0,0, 0,1,0,0])
+
 
 def count_1s(code):
     return sum(code)

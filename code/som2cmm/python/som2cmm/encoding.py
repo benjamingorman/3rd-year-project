@@ -32,6 +32,9 @@ def get_scheme(patterns, config):
     elif method == "som":
         som_path = config["som"]["som_file_path"]
         scheme = schemes.SOMEncoder(som_path)
+    elif method == "baum":
+        segment_sizes = config["baum"]["segment_sizes"]
+        scheme = schemes.BaumEncoder(segment_sizes)
     else:
         raise ValueError("Unrecognized encoding method: " + method)
 
