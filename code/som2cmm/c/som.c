@@ -12,7 +12,7 @@
 #define STATUS_ERROR 1
 #define STATUS_EMPTY_LINE 2
 #define STATUS_EOF 3
-#define LINE_BUF_SIZE 2048
+#define LINE_BUF_SIZE 20480
 
 
 struct SOM {
@@ -288,6 +288,7 @@ void find_normalize_minima_maxima(
         float * normalize_minima,
         float * normalize_maxima
         ) {
+    printf("find_normalize_minima_maxima %s, %d, %d", train_file, train_file_class_index, input_dims);
     FILE *fp = fopen(train_file, "r");
     if (fp == NULL) {
         printf("Error opening file: %s\n", train_file);
@@ -296,17 +297,19 @@ void find_normalize_minima_maxima(
 
     for (int i = 0; i < input_dims; i++) {
         normalize_minima[i] = FLT_MAX;
-        normalize_maxima[i] = FLT_MIN;
+        normalize_maxima[i] = -FLT_MAX;
     }
 
     int status; 
-    char * input_line_buf = (char *)malloc(LINE_BUF_SIZE);
     float input_vector[input_dims];
 
     while (true) {
+        char * input_line_buf = (char *)malloc(LINE_BUF_SIZE);
         status = read_input_file_line(fp, input_line_buf);
-        if (status == STATUS_EMPTY_LINE)
+        if (status == STATUS_EMPTY_LINE) {
+            printf("WARNING empty line\n");
             continue;
+        }
         else if (status == STATUS_EOF)
             break;
         else {
@@ -319,16 +322,19 @@ void find_normalize_minima_maxima(
                     normalize_maxima[i] = input_vector[i];
             }
         }
+        free(input_line_buf);
     }
 
-    free(input_line_buf);
 }
 
 void normalize_input_vector(int dims, float * input_vector, float * normalize_minima, float * normalize_maxima) {
     for (int i=0; i < dims; ++i) {
         float min = normalize_minima[i];
         float max = normalize_maxima[i];
-        input_vector[i] = get_linear_blend(min, max, input_vector[i]);
+        if (min == max)
+            input_vector[i] = min;
+        else
+            input_vector[i] = get_linear_blend(min, max, input_vector[i]);
     }
 }
 
@@ -528,7 +534,7 @@ int main(int argc, char** argv) {
     float opt_weight_equalize_val = 0.0;
     float opt_weight_randomize_min = -1.0;
     float opt_weight_randomize_max = 1.0;
-    bool opt_normalize_inputs = true;
+    bool opt_normalize_inputs = false;
 
     // Training happens in two phases, p1 is loose and p2 is tight
     struct SOMTrainingParams p1_params = create_SOMTrainingParams();
